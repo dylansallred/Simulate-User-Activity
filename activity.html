@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Activity Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        #log {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #444;
+            background-color: #2a2a2a;
+            overflow-y: auto;
+            height: 200px;
+            color: #e0e0e0;
+        }
+        button {
+            background-color: #444;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        button:disabled {
+            background-color: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        h1 {
+            color: #4a9eff;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Activity Simulator</h1>
+    <button id="startButton">Start Simulation</button>
+    <button id="stopButton" disabled>Stop Simulation</button>
+    <div id="log"></div>
+
+    <script>
+        let simulationInterval;
+        const logDiv = document.getElementById("log");
+
+        function logAction(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `${timestamp} - ${message}`;
+            const logEntry = document.createElement("div");
+            logEntry.textContent = logMessage;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight; // Scroll to bottom
+        }
+
+        function moveMouse() {
+            const mouseEvent = new MouseEvent("mousemove", {
+                clientX: Math.random() * window.innerWidth,
+                clientY: Math.random() * window.innerHeight
+            });
+            document.dispatchEvent(mouseEvent);
+            logAction("Mouse moved.");
+        }
+
+        function pressKey() {
+            const keyEvent = new KeyboardEvent("keydown", {
+                key: "Shift",
+                code: "ShiftLeft",
+                keyCode: 16,
+                bubbles: true
+            });
+            document.dispatchEvent(keyEvent);
+            logAction("Shift key pressed.");
+        }
+
+        function startSimulation() {
+            logAction("Simulation started.");
+            simulationInterval = setInterval(() => {
+                moveMouse();
+                setTimeout(pressKey, 5000); // Press a key 5 seconds after mouse movement
+            }, 10000); // Repeat every 10 seconds
+            document.getElementById("startButton").disabled = true;
+            document.getElementById("stopButton").disabled = false;
+        }
+
+        function stopSimulation() {
+            clearInterval(simulationInterval);
+            logAction("Simulation stopped.");
+            document.getElementById("startButton").disabled = false;
+            document.getElementById("stopButton").disabled = true;
+        }
+
+        document.getElementById("startButton").addEventListener("click", startSimulation);
+        document.getElementById("stopButton").addEventListener("click", stopSimulation);
+    </script>
+</body>
+</html>
