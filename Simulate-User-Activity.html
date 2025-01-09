@@ -51,6 +51,59 @@
     <button id="stopButton" disabled>Stop Simulation</button>
     <div id="log"></div>
 
+    <div style="max-width: 600px; margin: 20px auto;">
+        <h3>PowerShell Script For Simulated User Activity</h3>
+        <div style="position: relative;">
+            <textarea id="powershellScript" readonly style="width: 100%; height: 400px; background-color: #2a2a2a; color: #e0e0e0; border: 1px solid #444; padding: 10px; resize: none; font-family: 'Courier New', monospace;"># Add necessary .NET assemblies
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class UserActivitySimulator {
+    [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+    public static extern void mouse_event(int flags, int dx, int dy, int data, IntPtr extraInfo);
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    public static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
+}
+"@
+
+# Constants for mouse movement
+$MOUSEEVENTF_MOVE = 0x0001
+
+# Constants for key presses
+$KEYEVENTF_KEYDOWN = 0x0000
+$KEYEVENTF_KEYUP = 0x0002
+$VK_SHIFT = 0x10 # Virtual key code for Shift key
+
+# Function to move the mouse slightly
+function Move-Mouse {
+    [UserActivitySimulator]::mouse_event($MOUSEEVENTF_MOVE, 1, 0, 0, [IntPtr]::Zero)
+    Start-Sleep -Milliseconds 100
+    [UserActivitySimulator]::mouse_event($MOUSEEVENTF_MOVE, -1, 0, 0, [IntPtr]::Zero)
+    Write-Output "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Mouse moved slightly."
+}
+
+# Function to simulate a Shift key press
+function Press-Key {
+    [UserActivitySimulator]::keybd_event($VK_SHIFT, 0, $KEYEVENTF_KEYDOWN, 0)
+    Start-Sleep -Milliseconds 50
+    [UserActivitySimulator]::keybd_event($VK_SHIFT, 0, $KEYEVENTF_KEYUP, 0)
+    Write-Output "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Shift key pressed."
+}
+
+# Log script start
+Write-Output "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - User activity simulation started."
+
+# Loop to simulate activity
+while ($true) {
+    Move-Mouse
+    Start-Sleep -Seconds 30
+    Press-Key
+    Start-Sleep -Seconds 30
+}</textarea>
+            <button id="copyButton" style="position: absolute; top: 5px; right: 5px; padding: 5px 10px; font-size: 12px;">Copy</button>
+        </div>
+    </div>
+
     <script>
         let simulationInterval;
         const logDiv = document.getElementById("log");
@@ -103,6 +156,20 @@
 
         document.getElementById("startButton").addEventListener("click", startSimulation);
         document.getElementById("stopButton").addEventListener("click", stopSimulation);
+
+        document.getElementById("copyButton").addEventListener("click", function() {
+            const scriptText = document.getElementById("powershellScript");
+            scriptText.select();
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();
+            
+            // Show feedback
+            const originalText = this.textContent;
+            this.textContent = "Copied!";
+            setTimeout(() => {
+                this.textContent = originalText;
+            }, 1500);
+        });
     </script>
 </body>
 </html>
